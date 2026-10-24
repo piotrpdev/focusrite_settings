@@ -1,31 +1,41 @@
-# focusrite_buffer (Rust)
+# focusrite_buffer
 
-Rust port of `tools/focusrite_buffer.cpp`. Sets a Focusrite interface's
-streaming buffer size and/or sample rate by issuing the same private ioctls
-Focusrite's Pal layer uses — no `FocusritePal64.dll`.
+Set a Focusrite audio interface's streaming buffer size and/or sample rate from
+the command line, by issuing the same private ioctls Focusrite's own Pal layer
+uses — without linking or loading `FocusritePal64.dll`.
 
-Protocol reference: `analysis/FocusritePal64.dll.md`.
+```bat
+focusrite_buffer buffer 256            :: set the buffer
+focusrite_buffer rate 48000            :: set the sample rate
+focusrite_buffer rate 48000 buffer 256 :: both, rate first
+```
 
-This crate is the implementation to maintain. The C++ file stays next to it as
-the original reference for the wire format; "Intentional differences" below
-lists everywhere the two do not behave the same.
+Useful when Focusrite Control is not installed, when you want the settings
+scriptable, or when you want to know what your interface is actually running at.
+
+> **Unofficial.** This is not affiliated with or endorsed by Focusrite. It talks
+> to undocumented driver internals that were recovered by static analysis (see
+> [`docs/`](docs/)), not to a published API. A driver update can change or break
+> any of it. It sets hardware state and is used at your own risk.
+
+The `docs/` folder holds the analysis this is built on and the original C++
+version of the tool; the Rust port here is the maintained one.
 
 ## Build
 
-Requires Rust 1.85 or newer (edition 2024). It links against the Windows SDK
-import libraries, so you need either a native MSVC toolchain or a MinGW
-cross-compiler. Dependencies (`windows` 0.58, `anyhow`) come from crates.io and
+Requires Rust 1.88 or newer (edition 2024 with let-chains) and Windows 10/11 on
+x64. It links against the Windows SDK import libraries, so you need either a
+native MSVC toolchain or a MinGW cross-compiler. Dependencies (`windows` 0.58, `anyhow`) come from crates.io and
 are pinned in `Cargo.lock`; pass `--locked` so a build never silently resolves
 different versions.
 
 ### On Windows (MSVC, recommended)
 
 With the Visual Studio Build Tools installed (the same `cl.exe` the C++ version
-uses):
+in `docs/` uses):
 
 ```bat
 rustup target add x86_64-pc-windows-msvc
-cd tools\focusrite-buffer-rs
 cargo build --release --locked
 ```
 
@@ -36,7 +46,6 @@ Result: `target\release\focusrite_buffer.exe`.
 ```bash
 sudo apt-get install -y gcc-mingw-w64-x86-64
 rustup target add x86_64-pc-windows-gnu
-cd tools/focusrite-buffer-rs
 cargo build --release --locked --target x86_64-pc-windows-gnu
 ```
 
@@ -137,6 +146,23 @@ ok: verified
 `cargo test` possible off Windows. `win` is also the only module containing
 `unsafe`, so the platform boundary and the safety boundary are the same line.
 
+## Docs
+
+Everything this tool believes about the driver is in here, with the artifact
+sha256 and the address each claim comes from:
+
+| file | what it is |
+|---|---|
+| [`docs/FocusritePal64.dll.md`](docs/FocusritePal64.dll.md) | Pal: the command framing, every slot this tool mirrors, the notification path, and the `0x222000` handshake |
+| [`docs/FocusriteUsbSwRoot.sys.md`](docs/FocusriteUsbSwRoot.sys.md) | the driver that answers the ioctls, and what the 16-byte descriptor's four words mean |
+| [`docs/Focusrite Notifier.exe.md`](<docs/Focusrite Notifier.exe.md>) | the tray app: how its settings window talks to Pal, kept because it is the reference for what the settings mean |
+| [`docs/focusrite_buffer.cpp`](docs/focusrite_buffer.cpp) | the original C++ version of this tool, kept as the reference for the wire format |
+
+The notes on the binaries are reverse-engineering output, not documentation from
+Focusrite; where a claim was not established they say so, and
+[`docs/NOTICE.md`](docs/NOTICE.md) spells out that no Focusrite binary is
+redistributed here.
+
 ## How it maps to the C++ version
 
 | C++ | Rust |
@@ -175,7 +201,7 @@ deliberate divergences:
    below its own `0x7000` (`cmp [buffer+4], 0x7000; jbe continue`) and throws
    "Driver API mismatch" otherwise. The port applies the same rule and exits `1`;
    the C++ tool only prints the word. The descriptor's four words are decoded in
-   `analysis/FocusriteUsbSwRoot.sys.md`: word 0 is the driver's own API, word 1
+   `docs/FocusriteUsbSwRoot.sys.md`: word 0 is the driver's own API, word 1
    the requirement, word 2 the build number (`261`), word 3 an unexplained
    `0x8048F000` that Pal stores and never reads.
 4. **A path without a NUL within the buffer the API filled is skipped** instead
@@ -228,3 +254,16 @@ deliberate divergences:
   `{0x400, 5, u32 Hz}` for the sample rate, read back from the config blob at
   `+0x14` and `+0x0C`.
 - `cargo audit` has not been run against the locked dependencies.
+
+## License
+
+Licensed under either of
+
+- [Apache License, Version 2.0](LICENSE-APACHE)
+- [MIT license](LICENSE-MIT)
+
+at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this crate by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.

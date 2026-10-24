@@ -1,13 +1,14 @@
-//! `focusrite_buffer` - Rust port of `tools/focusrite_buffer.cpp`.
+//! `focusrite_buffer` - set a Focusrite interface's buffer size or sample rate.
 //!
 //! Changes the streaming buffer size and/or sample rate of a Focusrite
 //! interface by issuing the same private ioctls Focusrite's Pal layer uses.
 //! No `FocusritePal64.dll` involved.
 //!
-//! Protocol reference: `analysis/FocusritePal64.dll.md`.
+//! Protocol reference: `docs/FocusritePal64.dll.md`; the driver side of the
+//! handshake is in `docs/FocusriteUsbSwRoot.sys.md`.
 //!
-//! This crate is the implementation to maintain; the C++ file next to it is the
-//! original reference for the wire format. `README.md` lists every intentional
+//! This is the maintained implementation; `docs/focusrite_buffer.cpp` is the
+//! original C++ tool kept as a reference, and `README.md` lists every intentional
 //! difference between the two.
 //!
 //! Layout:

@@ -2,7 +2,9 @@
 name = "focusrite-buffer"
 version = "0.1.0"
 edition = "2024"
-description = "Set a Focusrite interface's streaming buffer size and/or sample rate via the FocusriteUsb driver"
+rust-version = "1.88"
+description = "Set a Focusrite audio interface's streaming buffer size and/or sample rate via the private driver ioctls Focusrite's Pal layer uses"
+license = "MIT OR Apache-2.0"
 
 [[bin]]
 name = "focusrite_buffer"

@@ -152,7 +152,7 @@ impl Config {
 /// `FocusriteUsbSwRoot.sys` writes four hard-coded dwords here (`0x1400118d3` in
 /// that driver: `0x7000, 0x7000, 0x105, 0x8048F000`), and Pal reads exactly two
 /// things out of them. The field meanings are what Pal's code does, not guesses:
-/// see `analysis/FocusriteUsbSwRoot.sys.md`.
+/// see `docs/FocusriteUsbSwRoot.sys.md`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct DriverVersion {
     /// Word 0: the driver's own API version. Pal never compares it; it only
