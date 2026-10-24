@@ -23,6 +23,14 @@ windows = { version = "0.58", features = [
 [profile.release]
 opt-level = "s"
 strip = true
+# The tool talks straight to a kernel driver and runs for a few hundred
+# milliseconds; a wrap-around in the frame arithmetic would be far more
+# expensive than the overflow checks.
+overflow-checks = true
+# Nothing catches a panic here and there is nothing to unwind for: the process
+# owns a device handle and exits. Aborting keeps the binary smaller. The cost is
+# that a panic hook cannot run in release builds.
+panic = "abort"
 
 [lints.rust]
 unsafe_code = "allow"
@@ -43,6 +51,7 @@ panic = "deny"
 unreachable = "deny"
 todo = "deny"
 unimplemented = "deny"
+dbg_macro = "deny"
 await_holding_lock = "deny"
 indexing_slicing = "deny"
 float_cmp = "deny"
