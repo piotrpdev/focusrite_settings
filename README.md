@@ -15,7 +15,9 @@ registry and SetupAPI, open one handle, send the ioctl requests with their
 16-byte command header, and report the exit code](docs/diagram.jpg)
 
 *What a run does: parse the arguments, find the interface, open one handle, send
-nine ioctls, then report what the device actually took.*
+nine ioctls, then report what the device actually took. The
+[prompt that generated the diagram](docs/diagram-prompt.md) doubles as a summary
+of the flow, and names the values it asserts.*
 
 Useful when Focusrite Control is not installed, when you want the settings
 scriptable, or when you want to know what your interface is actually running at.
