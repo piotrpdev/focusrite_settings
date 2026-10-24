@@ -7,7 +7,7 @@ Symbols are stripped; names are `FUN_*` from Ghidra except imported MFC/CRT func
 
 Confidence tags: **[obs]** = read directly from the binary; **[inf]** = inferred from layout/semantics
 (usually because the implementation lives in `FocusritePal64.dll` or the kernel driver;
-the Pal side is now documented in `analysis/FocusritePal64.dll.md`).
+the Pal side is now documented in `FocusritePal64.dll.md`).
 
 ---
 
@@ -107,7 +107,7 @@ palDevice = *(PalDevice**)this->deviceSharedPtr;                    // shared_pt
   clock source → slot `+0x50` (`FUN_14001ce60`). **[obs]**
 
 What `+0x160` actually is (resolved against `FocusritePal64.dll`, see
-`analysis/FocusritePal64.dll.md`): the abstract `Pal::Device` vtable slot is pure, and the concrete
+`FocusritePal64.dll.md`): the abstract `Pal::Device` vtable slot is pure, and the concrete
 `Pal::DiceDevice` implementation is `Pal!0x180008BA0`, which sends the DICE command
 `section 0x400, id 9` with the 4-byte sample count. That command goes to
 `Pal::DiceRootDriverWin::vtbl[0x18]` (`Pal!0x18000C6C0`) → `ioctl()` (`Pal!0x18000CD00`) →
@@ -198,7 +198,7 @@ dialog FUN_14001c2f0: repopulate combos, re-enable combo 1007, recompute latency
 ## 9. Residual unknowns (bounded)
 
 * Pal slot semantics are now established from `FocusritePal64.dll` (see
-  `analysis/FocusritePal64.dll.md`), including the DICE command framing and the ioctls
+  `FocusritePal64.dll.md`), including the DICE command framing and the ioctls
   (`0x222000` version, `0x222008` command, `0x22200C` notification wait).
 * Not resolved: the device-interface GUID / `\\?\` path Pal passes to `CreateFileA`; the driver-side
   meaning of `section 0x400` / ids `1,2,5,6,9`; and the property ids passed through

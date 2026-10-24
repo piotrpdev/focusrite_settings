@@ -1,13 +1,13 @@
 # FocusritePal64.dll — Pal layer behind the Notifier's settings UI
 
-Artifact: `Drivers/FocusritePal64.dll` (newly present in this workspace; absent during the first pass)
+Artifact: `FocusritePal64.dll`, from the 4.143.0.261 driver package
 sha256: `333f3e219c87b0468b5827565f803c66bafca896f727ab7bef576b986eda7988`
 Image base `0x180000000`. x64, 488 procedures, stripped except for one exported entry point
 (`Pal::System::createSystem`, `0x180006EB0`) and full RTTI.
 
 Confidence tags: **[obs]** read from the binary; **[inf]** inferred (mostly C++ layout / naming).
 
-This file resolves the parts of `analysis/Focusrite Notifier.exe.md` §4 and §9 that were previously
+This file resolves the parts of `Focusrite Notifier.exe.md` §4 and §9 that were previously
 "unknown by construction".
 
 ---
@@ -176,7 +176,7 @@ same balloon.
 `C:\Windows\System32\drivers\FocusriteUsb.sys`. Pal's `DiceRootDriverWin` handle is therefore the
 `FocusriteUsb` root device; the ioctl codes above are its private command channel.
 
-## 8. Direct driver access (used by `tools/focusrite_buffer.cpp`)
+## 8. Direct driver access (used by `focusrite_buffer.cpp`)
 
 Pal enumerates device interfaces itself; the GUIDs are hard-coded in
 `DiceDriverManagerWin`'s ctor `0x180008F80`, which pushes three 16-byte values into a
@@ -221,7 +221,7 @@ observed): `cmp dword ptr [rsp+0x54], 0x7000; jbe <continue>` — i.e. **word 1 
 below Pal's built-in `0x7000`**, not at or above it. If word 1 is greater, Pal builds
 `"Driver API mismatch. PAL 28672 != Driver minimum <word 0>"` and throws. Words 2 and 3 are
 copied as one u64 into the device object at `+0x1A8` and never read again; word 0 is only
-printed by that message. See `analysis/FocusriteUsbSwRoot.sys.md` for what the driver puts
+printed by that message. See `FocusriteUsbSwRoot.sys.md` for what the driver puts
 in the four words.
 
 ### Runtime observations (test machine, driver 4.143.0.0)
@@ -235,7 +235,7 @@ in the four words.
 * No `{AC4D0455-…}` or `{429A7462-…-411F}` interfaces were registered at all on that machine.
 * Installed `FocusriteUsb.sys` reports file version **4.143.0.0**, while Device Manager /
   `DEVPKEY_Device_DriverVersion` reports **4.143.0.261** — the package version, matching the
-  workspace copy. The `0x222000` descriptor is `0x7000 0x7000 0x0105 0x8048F000`; words 0 and
+  shipped copy. The `0x222000` descriptor is `0x7000 0x7000 0x0105 0x8048F000`; words 0 and
   1 are the API words, word 2 is the `261` build number, word 3 is an unexplained stamp.
 * A standalone client works end-to-end: open
   `\\?\root#focusriteusbnew#0000#{AC4D0455-50D7-4498-…}\pal`, send `{0x400, 9, u32 samples}`,

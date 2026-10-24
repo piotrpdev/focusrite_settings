@@ -18,7 +18,7 @@
 //     uses Pal: it opens this device handle with share mode 0, so a second open
 //     fails with ERROR_SHARING_VIOLATION (32).
 //
-// Where the magic numbers come from (see analysis/FocusritePal64.dll.md):
+// Where the magic numbers come from (see FocusritePal64.dll.md):
 //   Pal's DiceRootDriverWin opens the device with CreateFileA(..., GENERIC_READ|
 //   GENERIC_WRITE, share 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED|NORMAL), then:
 //     - DeviceIoControl(0x222000)                  -> driver API version
