@@ -3,6 +3,9 @@
 A paste-ready prompt for an image model: one poster that shows the whole run from
 argv to exit code, with the ioctl mechanism in the middle.
 
+The `docs/diagram.jpg` in this repository was generated from it with Nano Banana 2
+(Gemini 3.1 Flash Image).
+
 Every number, path and id in it comes from this crate (`src/protocol.rs`,
 `src/cli.rs`, `src/win/`) and from `docs/FocusritePal64.dll.md` /
 `docs/FocusriteUsbSwRoot.sys.md`. If the code changes, the prompt should change

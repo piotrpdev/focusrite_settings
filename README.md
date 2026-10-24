@@ -264,6 +264,25 @@ deliberate divergences:
   `+0x14` and `+0x0C`.
 - `cargo audit` has not been run against the locked dependencies.
 
+## How this was made
+
+Almost everything in this repository is AI-generated, stated up front so the
+claims can be weighed accordingly:
+
+- **Code, analysis notes and this README**: DeepSeek V4.1 Flash 1017, driven
+  through an agent harness, with [REA](https://github.com/morluto/rea) doing the
+  static analysis of the binaries (`open_binary`, `analyze_function`,
+  `search_bytes`, evidence bundles). The `src/` layout, the tests and the
+  lint set came out of the same process.
+- **`docs/diagram.jpg`**: Nano Banana 2 (Gemini 3.1 Flash Image), from the
+  [prompt in this repo](docs/diagram-prompt.md).
+
+Reviewed and directed by the repository owner.
+
+Nothing here asks to be taken on trust: the analysis files name the artifact
+sha256 and the address behind each claim, `cargo test` covers the parsers, and
+[Status](#status) says what has and has not been run against real hardware.
+
 ## License
 
 Licensed under either of

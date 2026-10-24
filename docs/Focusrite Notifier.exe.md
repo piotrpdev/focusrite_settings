@@ -1,5 +1,7 @@
 # Focusrite Notifier — "Buffer Size" dropdown: end-to-end trace
 
+*Written with [REA](https://github.com/morluto/rea)-driven static analysis by DeepSeek V4.1 Flash 1017. Every claim cites the artifact digest and the address it comes from; where something was not established the note says so.*
+
 Artifact: `Drivers/Focusrite Notifier.exe`
 sha256: `8e75ab9794c67e2d172c7b8987c6505d2647640ac0fb903ae2e82621e1a79c89`
 Image base `0x140000000`. All addresses below are live (Ghidra) addresses in that image.

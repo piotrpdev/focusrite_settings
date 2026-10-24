@@ -1,5 +1,7 @@
 # FocusritePal64.dll — Pal layer behind the Notifier's settings UI
 
+*Written with [REA](https://github.com/morluto/rea)-driven static analysis by DeepSeek V4.1 Flash 1017. Every claim cites the artifact digest and the address it comes from; where something was not established the note says so.*
+
 Artifact: `FocusritePal64.dll`, from the 4.143.0.261 driver package
 sha256: `333f3e219c87b0468b5827565f803c66bafca896f727ab7bef576b986eda7988`
 Image base `0x180000000`. x64, 488 procedures, stripped except for one exported entry point

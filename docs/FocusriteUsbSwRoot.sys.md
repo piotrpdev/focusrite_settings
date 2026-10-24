@@ -1,5 +1,7 @@
 # FocusriteUsbSwRoot.sys — ioctl surface
 
+*Written with [REA](https://github.com/morluto/rea)-driven static analysis by DeepSeek V4.1 Flash 1017. Every claim cites the artifact digest and the address it comes from; where something was not established the note says so.*
+
 The software root enumerator owns the `ROOT\FOCUSRITEUSBNEW\0000` device whose `\pal`
 interface Pal opens. This is the driver that answers the ioctl codes Pal sends; the USB
 function driver (`FocusriteUsb.sys`) does not contain them at all.
