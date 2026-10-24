@@ -1,4 +1,4 @@
-//! `focusrite_buffer` - set a Focusrite interface's buffer size or sample rate.
+//! `focusrite_settings` - set a Focusrite interface's buffer size or sample rate.
 //!
 //! Changes the streaming buffer size and/or sample rate of a Focusrite
 //! interface by issuing the same private ioctls Focusrite's Pal layer uses.
@@ -21,11 +21,11 @@
 //! Build: `cargo build --release --target x86_64-pc-windows-msvc`
 //!
 //! Usage:
-//! - `focusrite_buffer 256`
-//! - `focusrite_buffer buffer 256`
-//! - `focusrite_buffer rate 48000`
-//! - `focusrite_buffer rate 48000 buffer 256`
-//! - `focusrite_buffer --help`
+//! - `focusrite_settings 256`
+//! - `focusrite_settings buffer 256`
+//! - `focusrite_settings rate 48000`
+//! - `focusrite_settings rate 48000 buffer 256`
+//! - `focusrite_settings --help`
 
 // The shipped binary must not panic: `unwrap`, `expect`, `panic!`, indexing and
 // unchecked arithmetic are denied in `Cargo.toml`. Tests are exempt, because a
@@ -69,6 +69,6 @@ fn main() {
 /// that `cargo test` can build the crate and run the parsers' tests.
 #[cfg(not(windows))]
 fn main() {
-    eprintln!("focusrite_buffer only runs on Windows; `cargo test` covers the parsers elsewhere");
+    eprintln!("focusrite_settings only runs on Windows; `cargo test` covers the parsers elsewhere");
     std::process::exit(cli::EXIT_FAILED);
 }

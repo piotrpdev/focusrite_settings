@@ -1,5 +1,5 @@
 [package]
-name = "focusrite-buffer"
+name = "focusrite-settings"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.88"
@@ -7,7 +7,7 @@ description = "Set a Focusrite audio interface's streaming buffer size and/or sa
 license = "MIT OR Apache-2.0"
 
 [[bin]]
-name = "focusrite_buffer"
+name = "focusrite_settings"
 path = "src/main.rs"
 
 [dependencies]

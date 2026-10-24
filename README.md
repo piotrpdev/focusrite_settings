@@ -1,13 +1,13 @@
-# focusrite_buffer
+# focusrite_settings
 
 Set a Focusrite audio interface's streaming buffer size and/or sample rate from
 the command line, by issuing the same private ioctls Focusrite's own Pal layer
 uses — without linking or loading `FocusritePal64.dll`.
 
 ```bat
-focusrite_buffer buffer 256            :: set the buffer
-focusrite_buffer rate 48000            :: set the sample rate
-focusrite_buffer rate 48000 buffer 256 :: both, rate first
+focusrite_settings buffer 256            :: set the buffer
+focusrite_settings rate 48000            :: set the sample rate
+focusrite_settings rate 48000 buffer 256 :: both, rate first
 ```
 
 Useful when Focusrite Control is not installed, when you want the settings
@@ -39,7 +39,7 @@ rustup target add x86_64-pc-windows-msvc
 cargo build --release --locked
 ```
 
-Result: `target\release\focusrite_buffer.exe`.
+Result: `target\release\focusrite_settings.exe`.
 
 ### On Debian/Ubuntu (cross-compile a MinGW build)
 
@@ -49,7 +49,7 @@ rustup target add x86_64-pc-windows-gnu
 cargo build --release --locked --target x86_64-pc-windows-gnu
 ```
 
-Result: `target/x86_64-pc-windows-gnu/release/focusrite_buffer.exe`. This runs on
+Result: `target/x86_64-pc-windows-gnu/release/focusrite_settings.exe`. This runs on
 Windows (Rust's std is linked statically, only system DLLs are imported) but is
 not the MSVC artifact you get from the native build. On Fedora the package is
 `mingw64-gcc`; other distributions use a similar name.
@@ -74,11 +74,11 @@ stays a manual step.
 ## Run
 
 ```bat
-focusrite_buffer 256                          :: buffer size (legacy form)
-focusrite_buffer buffer 256
-focusrite_buffer rate 48000
-focusrite_buffer rate 48000 buffer 256        :: rate first, then buffer
-focusrite_buffer --help
+focusrite_settings 256                           :: buffer size (legacy form)
+focusrite_settings buffer 256
+focusrite_settings rate 48000
+focusrite_settings rate 48000 buffer 256         :: rate first, then buffer
+focusrite_settings --help
 ```
 
 Close Focusrite Notifier / Focusrite Control first: Pal opens the control
@@ -156,7 +156,7 @@ sha256 and the address each claim comes from:
 | [`docs/FocusritePal64.dll.md`](docs/FocusritePal64.dll.md) | Pal: the command framing, every slot this tool mirrors, the notification path, and the `0x222000` handshake |
 | [`docs/FocusriteUsbSwRoot.sys.md`](docs/FocusriteUsbSwRoot.sys.md) | the driver that answers the ioctls, and what the 16-byte descriptor's four words mean |
 | [`docs/Focusrite Notifier.exe.md`](<docs/Focusrite Notifier.exe.md>) | the tray app: how its settings window talks to Pal, kept because it is the reference for what the settings mean |
-| [`docs/focusrite_buffer.cpp`](docs/focusrite_buffer.cpp) | the original C++ version of this tool, kept as the reference for the wire format |
+| [`docs/focusrite_buffer.cpp`](docs/focusrite_buffer.cpp) | the original C++ tool, which only handled the buffer size; kept as the reference for the wire format |
 
 The notes on the binaries are reverse-engineering output, not documentation from
 Focusrite; where a claim was not established they say so, and

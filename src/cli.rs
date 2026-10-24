@@ -84,7 +84,7 @@ pub(crate) fn parse_invocation(args: &[String]) -> Result<Invocation, Error> {
                 let value = iter.next().ok_or(Error::MissingValue { key: "rate" })?;
                 options.rate = Some(RateHz::new(positive_integer("rate", value)?));
             }
-            // Legacy form: `focusrite_buffer 256` means the buffer size.
+            // Legacy form: `focusrite_settings 256` means the buffer size.
             token if args.len() == 1 => {
                 options.buffer = Some(Samples::new(positive_integer("samples", token)?));
             }
@@ -100,11 +100,11 @@ pub(crate) fn parse_invocation(args: &[String]) -> Result<Invocation, Error> {
 
 /// Print the usage text.
 pub(crate) fn print_usage() {
-    eprintln!("usage: focusrite_buffer <samples>                  (buffer size)");
-    eprintln!("       focusrite_buffer buffer <samples>");
-    eprintln!("       focusrite_buffer rate <hz>");
-    eprintln!("       focusrite_buffer rate <hz> buffer <samples>");
-    eprintln!("       focusrite_buffer --help");
+    eprintln!("usage: focusrite_settings <samples>                   (buffer size)");
+    eprintln!("       focusrite_settings buffer <samples>");
+    eprintln!("       focusrite_settings rate <hz>");
+    eprintln!("       focusrite_settings rate <hz> buffer <samples>");
+    eprintln!("       focusrite_settings --help");
     eprintln!();
     eprintln!("  Notifier's buffer list: {}", numbers(&NOTIFIER_SAMPLES));
     eprintln!("  Common rates:           {}", numbers(&NOTIFIER_RATES));
