@@ -10,7 +10,7 @@ use crate::cli::{
     print_usage, warn_about_unlisted,
 };
 use crate::interface::path_text;
-use crate::protocol::{Command, MIN_DRIVER_API};
+use crate::protocol::{Command, PAL_API_VERSION};
 use crate::win::discovery::open_control_interface;
 use crate::win::ioctl::{command, read_config};
 use crate::win::version::print_file_version;
@@ -157,19 +157,21 @@ pub(crate) fn run(args: &[String]) -> Result<i32> {
 
     println!("\ndevice:     {}", path_text(&opened.path));
     println!(
-        "driver:     0x{:08X} 0x{:08X} 0x{:08X} 0x{:08X} (API 0x{:X})",
-        opened.version.word0,
-        opened.version.api,
-        opened.version.word2,
-        opened.version.word3,
-        opened.version.api
+        "driver:     0x{:08X} 0x{:08X} 0x{:08X} 0x{:08X}",
+        opened.version.api, opened.version.pal_api, opened.version.build, opened.version.stamp
+    );
+    println!(
+        "             api 0x{:X}, wants Pal API <= 0x{:X} (this tool: 0x{PAL_API_VERSION:X}), \
+         build {}, stamp 0x{:08X}",
+        opened.version.api, opened.version.pal_api, opened.version.build, opened.version.stamp
     );
 
-    if opened.version.api < MIN_DRIVER_API {
+    if !opened.version.accepts_pal_api() {
         bail!(
-            "driver API 0x{:X} is older than 0x{MIN_DRIVER_API:X}; Focusrite's Pal layer \
-             refuses such a driver, so these command ids may not mean what this tool assumes",
-            opened.version.api
+            "the driver requires Pal API 0x{:X} and this tool implements 0x{PAL_API_VERSION:X}; \
+             Focusrite's own Pal refuses this pairing too ('Driver API mismatch'), so the \
+             command ids below are not known to mean the same thing",
+            opened.version.pal_api
         );
     }
 

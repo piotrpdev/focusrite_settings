@@ -148,16 +148,25 @@ impl Config {
 }
 
 /// The 16-byte descriptor `IOCTL_GET_VERSION` returns.
+///
+/// `FocusriteUsbSwRoot.sys` writes four hard-coded dwords here (`0x1400118d3` in
+/// that driver: `0x7000, 0x7000, 0x105, 0x8048F000`), and Pal reads exactly two
+/// things out of them. The field meanings are what Pal's code does, not guesses:
+/// see `analysis/FocusriteUsbSwRoot.sys.md`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct DriverVersion {
-    /// Printed for support; the meaning is not known.
-    pub(crate) word0: u32,
-    /// API version, the word Pal compares against [`MIN_DRIVER_API`].
+    /// Word 0: the driver's own API version. Pal never compares it; it only
+    /// lands in Pal's mismatch message, which prints it under the label
+    /// "Driver minimum".
     pub(crate) api: u32,
-    /// Printed for support; the meaning is not known.
-    pub(crate) word2: u32,
-    /// Printed for support; the meaning is not known.
-    pub(crate) word3: u32,
+    /// Word 1: the Pal API the driver requires. Pal compares it against its own
+    /// [`PAL_API_VERSION`] and refuses the device when the driver wants more.
+    pub(crate) pal_api: u32,
+    /// Word 2: the driver's build number (`261` in `4.143.0.261`).
+    pub(crate) build: u32,
+    /// Word 3: an unexplained constant (`0x8048F000` in this package), which
+    /// Pal copies into its device object and never reads.
+    pub(crate) stamp: u32,
 }
 
 impl DriverVersion {
@@ -167,11 +176,21 @@ impl DriverVersion {
     /// Decode the descriptor, or `None` when the driver wrote too little.
     pub(crate) fn parse(raw: &[u8]) -> Option<Self> {
         Some(Self {
-            word0: rd32(raw, 0)?,
-            api: rd32(raw, size_of::<u32>())?,
-            word2: rd32(raw, 2 * size_of::<u32>())?,
-            word3: rd32(raw, 3 * size_of::<u32>())?,
+            api: rd32(raw, 0)?,
+            pal_api: rd32(raw, size_of::<u32>())?,
+            build: rd32(raw, 2 * size_of::<u32>())?,
+            stamp: rd32(raw, 3 * size_of::<u32>())?,
         })
+    }
+
+    /// Whether this driver accepts the Pal API this tool implements.
+    ///
+    /// Pal's own test is `cmp dword ptr [buffer+4], 0x7000` followed by
+    /// `jbe <continue>`: a driver that requires a newer Pal than the one running
+    /// is refused, and one that requires an older one is fine. This tool stands
+    /// in for Pal, so it applies the same rule.
+    pub(crate) const fn accepts_pal_api(&self) -> bool {
+        self.pal_api <= PAL_API_VERSION
     }
 }
 
@@ -190,8 +209,9 @@ pub(crate) const OFF_SAMPLE_RATE: usize = 0x0C;
 /// Offset of the buffer size, in samples, inside that blob.
 pub(crate) const OFF_BUFFER_SIZE: usize = 0x14;
 
-/// Pal refuses drivers whose API word is older than this.
-pub(crate) const MIN_DRIVER_API: u32 = 0x7000;
+/// The Pal API this tool implements, i.e. the value Pal compiles in and compares
+/// the driver's requirement against (`0x7000` = "7.0" as Pal prints it: 28672).
+pub(crate) const PAL_API_VERSION: u32 = 0x7000;
 /// `CTL_CODE(0x22, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)`: driver descriptor.
 pub(crate) const IOCTL_GET_VERSION: u32 = 0x0022_2000;
 /// `CTL_CODE(0x22, 0x802, METHOD_BUFFERED, FILE_ANY_ACCESS)`: DICE command.
@@ -306,13 +326,32 @@ mod tests {
 
         let version = DriverVersion::parse(&raw).unwrap();
         assert_eq!(version.api, 0x7000);
-        assert_eq!(version.word2, 0x105);
-        assert!(version.api >= MIN_DRIVER_API);
+        assert_eq!(version.pal_api, 0x7000);
+        assert_eq!(version.build, 0x105);
+        assert_eq!(version.stamp, 0x8048_F000);
+        assert!(version.accepts_pal_api());
 
         assert_eq!(
             DriverVersion::parse(&raw[..4]),
             None,
             "a 4-byte descriptor is not a version"
         );
+    }
+
+    #[test]
+    fn accepts_drivers_that_do_not_want_a_newer_pal() {
+        let requiring = |pal_api: u32| DriverVersion {
+            api: 0x7000,
+            pal_api,
+            build: 0x105,
+            stamp: 0x8048_F000,
+        };
+
+        // What 4.143.0.261 reports, and an older driver: both fine.
+        assert!(requiring(PAL_API_VERSION).accepts_pal_api());
+        assert!(requiring(0x6000).accepts_pal_api());
+        // A driver that wants a newer Pal than this tool implements: refused,
+        // exactly as Focusrite's Pal refuses it.
+        assert!(!requiring(PAL_API_VERSION + 1).accepts_pal_api());
     }
 }

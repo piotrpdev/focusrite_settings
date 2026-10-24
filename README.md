@@ -105,7 +105,8 @@ interfaces found:
 trying: \\?\root#focusriteusbnew#0000#{ac4d0455-...}\pal
   open rw      -> ok
 device:     \\?\root#focusriteusbnew#0000#{ac4d0455-...}\pal
-driver:     0x00007000 0x00007000 0x00000105 0x8048F000 (API 0x7000)
+driver:     0x00007000 0x00007000 0x00000105 0x8048F000
+             api 0x7000, wants Pal API <= 0x7000 (this tool: 0x7000), build 261, stamp 0x8048F000
   [0x400/0x1] status=0 len=0 io=8
   [0x400/0x4] status=0 len=0 io=96
 before:     sample rate 44100, buffer 512
@@ -169,9 +170,14 @@ deliberate divergences:
 2. **`CancelIo` semantics depend on the calling thread**, so every ioctl here is
    issued and waited on synchronously from the main thread. Do not move a
    command into a worker thread without revisiting that.
-3. **The driver API gate is enforced.** Pal refuses drivers whose API word is
-   below `0x7000`; the port does the same and exits `1` instead of sending
-   commands whose meaning it cannot vouch for. The C++ tool only prints the word.
+3. **The driver API gate is enforced, in Pal's direction.** The descriptor's
+   word 1 is what the driver requires of Pal; Pal accepts it when it is at or
+   below its own `0x7000` (`cmp [buffer+4], 0x7000; jbe continue`) and throws
+   "Driver API mismatch" otherwise. The port applies the same rule and exits `1`;
+   the C++ tool only prints the word. The descriptor's four words are decoded in
+   `analysis/FocusriteUsbSwRoot.sys.md`: word 0 is the driver's own API, word 1
+   the requirement, word 2 the build number (`261`), word 3 an unexplained
+   `0x8048F000` that Pal stores and never reads.
 4. **A path without a NUL within the buffer the API filled is skipped** instead
    of being scanned past the end of the allocation.
 5. **Output details:** missing files get a `(not installed)` line rather than
@@ -214,7 +220,7 @@ deliberate divergences:
 - `cargo clippy --all-targets` is clean under `all`, `pedantic` and `nursery`
   with `unwrap_used`, `expect_used`, `panic`, `indexing_slicing` and friends
   denied.
-- `cargo test` runs the 19 parser/helper tests on a Linux host (all passing);
+- `cargo test` runs the 20 parser/helper tests on a Linux host (all passing);
   the Win32 layer is type-checked for `x86_64-pc-windows-msvc` and linked for
   `x86_64-pc-windows-gnu`, but has no automated test.
 - Not executed against a device here (no Windows host). The write path is the
