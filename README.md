@@ -10,6 +10,13 @@ focusrite_settings rate 48000            :: set the sample rate
 focusrite_settings rate 48000 buffer 256 :: both, rate first
 ```
 
+![Diagram of one run: parse the command line, find the interface through the
+registry and SetupAPI, open one handle, send the ioctl requests with their
+16-byte command header, and report the exit code](docs/diagram.jpg)
+
+*What a run does: parse the arguments, find the interface, open one handle, send
+nine ioctls, then report what the device actually took.*
+
 Useful when Focusrite Control is not installed, when you want the settings
 scriptable, or when you want to know what your interface is actually running at.
 
