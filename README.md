@@ -51,10 +51,10 @@ not the MSVC artifact you get from the native build. On Fedora the package is
 cargo test --locked
 ```
 
-Tests need a Windows host: the `windows` crate compiles to an empty shell on
-any other target, so the crate as a whole does not build on Linux (only
-`cargo check --target x86_64-pc-windows-msvc` does, and that is a type check, not
-a test run).
+`cargo test` runs on any host. The Win32 layer is `#[cfg(windows)]`, so off
+Windows the crate compiles with `cli`, `protocol` and `interface` only, and the
+harness runs their tests; on Windows the same command type-checks the platform
+layer too. Running the binary is the only thing that needs Windows.
 
 The tests cover the platform-free helpers only — GUID parsing, the `\pal` and
 `vid_1235` matchers, path handling, little-endian reads, the config and driver
@@ -116,6 +116,25 @@ after:      sample rate 44100, buffer 256
 ok: verified
   [0x400/0x2] status=0 len=0 io=8
 ```
+
+## Layout
+
+| file | what lives there | builds off Windows |
+|---|---|---|
+| `src/main.rs` | entry point, exit codes, `#[cfg(windows)]` gates | yes |
+| `src/cli.rs` | `Options`, `Invocation`, `Error`, argument parsing, usage text, exit codes | yes |
+| `src/protocol.rs` | `Samples`/`RateHz`/`Cmd`/`Command`, `Config`, `DriverVersion`, ioctl and blob constants, byte readers | yes |
+| `src/interface.rs` | `Guid` and its parser, UTF-16 path helpers, `\pal`/`vid_1235` matchers | yes |
+| `src/app.rs` | `run`: open, attach, read, apply, verify; the attach guard | no |
+| `src/win/mod.rs` | the only `#[cfg(windows)]` module root; GUID conversion, small casts | no |
+| `src/win/guards.rs` | `Handle`, `DeviceInfoSet`, `RegKey` RAII owners | no |
+| `src/win/ioctl.rs` | `ioctl_xfer`, the timeout drain, `command`, `read_config`, Win32 error mapping | no |
+| `src/win/discovery.rs` | registry walk, `SetupAPI` enumeration, the open attempts, `Opened` | no |
+| `src/win/version.rs` | the installed-versions block | no |
+
+`cli`, `protocol` and `interface` never mention `windows`, which is what makes
+`cargo test` possible off Windows. `win` is also the only module containing
+`unsafe`, so the platform boundary and the safety boundary are the same line.
 
 ## How it maps to the C++ version
 
@@ -185,18 +204,19 @@ deliberate divergences:
   the `get`/`split_at_checked` style where it matters.
 - **No `default-features = false` on `windows`.** Its only default feature is
   `std`, which the crate needs.
-- **Everything is one file on purpose.** The pure helpers are grouped so they can
-  be tested; splitting them into a second crate just to run `cargo test` on Linux
-  is not worth the extra plumbing while the tool is this size.
+- **One crate, three platform-free modules.** A second crate or a `lib` target
+  would force `pub` and `missing_docs` on everything the binary touches; `mod`
+  files keep the surface `pub(crate)` while still letting the pure half build
+  anywhere.
 
 ## Status
 
 - `cargo clippy --all-targets` is clean under `all`, `pedantic` and `nursery`
   with `unwrap_used`, `expect_used`, `panic`, `indexing_slicing` and friends
   denied.
-- `cargo test` covers the pure helpers; it has only been *compiled* on a Linux
-  host so far (`cargo check --target x86_64-pc-windows-msvc --all-targets`), not
-  run.
+- `cargo test` runs the 19 parser/helper tests on a Linux host (all passing);
+  the Win32 layer is type-checked for `x86_64-pc-windows-msvc` and linked for
+  `x86_64-pc-windows-gnu`, but has no automated test.
 - Not executed against a device here (no Windows host). The write path is the
   same frame the C++ version was verified with: `{0x400, 9, u32}` for the buffer,
   `{0x400, 5, u32 Hz}` for the sample rate, read back from the config blob at
