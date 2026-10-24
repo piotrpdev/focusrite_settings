@@ -1,0 +1,49 @@
+[package]
+name = "focusrite-buffer"
+version = "0.1.0"
+edition = "2024"
+description = "Set a Focusrite interface's streaming buffer size and/or sample rate via the FocusriteUsb driver"
+
+[[bin]]
+name = "focusrite_buffer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_Devices_DeviceAndDriverInstallation",
+] }
+
+[profile.release]
+opt-level = "s"
+strip = true
+
+[lints.rust]
+unsafe_code = "allow"
+unused_imports = "deny"
+unused_variables = "deny"
+unused_must_use = "deny"
+dead_code = "warn"
+missing_docs = "deny"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+redundant_pub_crate = "allow"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unreachable = "deny"
+todo = "deny"
+unimplemented = "deny"
+await_holding_lock = "deny"
+indexing_slicing = "deny"
+float_cmp = "deny"
+modulo_one = "deny"
